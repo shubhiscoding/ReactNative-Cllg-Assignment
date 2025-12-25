@@ -1,0 +1,77 @@
+// Prisma schema for Yappers
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model School {
+  id        String   @id @default(uuid())
+  domain    String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+  posts     Post[]
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  displayName  String
+  schoolId     String
+  isVerified   Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  school       School    @relation(fields: [schoolId], references: [id])
+  posts        Post[]
+  comments     Comment[]
+  votes        Vote[]
+}
+
+model Post {
+  id          String    @id @default(uuid())
+  userId      String
+  schoolId    String
+  content     String
+  imageUrl    String?
+  isAnonymous Boolean   @default(false)
+  isHotTake   Boolean   @default(false)
+  upvotes     Int       @default(0)
+  downvotes   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+  school      School    @relation(fields: [schoolId], references: [id])
+  comments    Comment[]
+  votes       Vote[]
+}
+
+model Comment {
+  id          String   @id @default(uuid())
+  postId      String
+  userId      String
+  content     String
+  isAnonymous Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  post        Post     @relation(fields: [postId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Vote {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  value     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}

@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Yappers",
+    "slug": "yappers",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "yappers",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFEF5"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yappers.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFEF5"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.yappers.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ]
+  }
+}
