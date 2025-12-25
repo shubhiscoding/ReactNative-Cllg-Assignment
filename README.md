@@ -13,6 +13,10 @@ A college-specific anonymous social media app where students can share posts, ho
 - **💬 Comments**: Engage with posts through comments (also with anonymous option)
 - **📧 OTP Verification**: Secure email verification with 6-digit OTP
 
+## DEMO
+
+https://github.com/user-attachments/assets/2a1d2928-c321-4d52-97ef-f96d458a3079
+
 ## Tech Stack
 
 ### Mobile App (`/mobile`)
