@@ -99,6 +99,44 @@ export const resendOTP = createAsyncThunk(
   }
 );
 
+// Request Login OTP (forgot password)
+export const requestLoginOTP = createAsyncThunk(
+  "auth/requestLoginOTP",
+  async (email: string, { rejectWithValue }) => {
+    try {
+      const response = await api.requestLoginOTP(email);
+      if (!response.success) {
+        return rejectWithValue(response.error || "Failed to send OTP");
+      }
+      return { email };
+    } catch (error: any) {
+      return rejectWithValue(error.message || "Failed to send OTP");
+    }
+  }
+);
+
+// Verify Login OTP (forgot password)
+export const verifyLoginOTP = createAsyncThunk(
+  "auth/verifyLoginOTP",
+  async (data: OTPVerification, { rejectWithValue }) => {
+    try {
+      const response = await api.verifyLoginOTP(data);
+      if (!response.success || !response.data) {
+        return rejectWithValue(response.error || "Verification failed");
+      }
+      
+      const { token, user } = response.data;
+      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("user", JSON.stringify(user));
+      api.setToken(token);
+      
+      return { token, user };
+    } catch (error: any) {
+      return rejectWithValue(error.message || "Verification failed");
+    }
+  }
+);
+
 // Logout
 export const logout = createAsyncThunk("auth/logout", async () => {
   await AsyncStorage.removeItem("token");
@@ -167,6 +205,32 @@ const authSlice = createSlice({
         state.user = action.payload.user;
       })
       .addCase(verifyOTP.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Request Login OTP
+      .addCase(requestLoginOTP.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(requestLoginOTP.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(requestLoginOTP.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Verify Login OTP
+      .addCase(verifyLoginOTP.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(verifyLoginOTP.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.token = action.payload.token;
+        state.user = action.payload.user;
+      })
+      .addCase(verifyLoginOTP.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })

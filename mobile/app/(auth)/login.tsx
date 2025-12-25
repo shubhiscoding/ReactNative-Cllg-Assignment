@@ -6,12 +6,11 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store/store";
-import { login } from "@/store/authSlice";
+import { login, requestLoginOTP, clearError } from "@/store/authSlice";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 
@@ -22,6 +21,7 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isOtpMode, setIsOtpMode] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) return;
@@ -30,6 +30,24 @@ export default function Login() {
     if (login.fulfilled.match(result)) {
       router.replace("/(main)/feed");
     }
+  };
+
+  const handleOtpLogin = async () => {
+    if (!email) return;
+    
+    const result = await dispatch(requestLoginOTP(email));
+    if (requestLoginOTP.fulfilled.match(result)) {
+      router.push({
+        pathname: "/(auth)/login-otp",
+        params: { email },
+      });
+    }
+  };
+
+  const toggleMode = () => {
+    dispatch(clearError());
+    setIsOtpMode(!isOtpMode);
+    setPassword("");
   };
 
   return (
@@ -64,13 +82,15 @@ export default function Login() {
               autoCapitalize="none"
             />
 
-            <Input
-              label="Password"
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
+            {!isOtpMode && (
+              <Input
+                label="Password"
+                placeholder="Enter your password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+            )}
 
             {error && (
               <View className="bg-danger/10 border-2 border-danger rounded-xl p-3">
@@ -78,11 +98,36 @@ export default function Login() {
               </View>
             )}
 
-            <Button
-              title={isLoading ? "Signing in..." : "Sign In"}
-              onPress={handleLogin}
-              disabled={isLoading || !email || !password}
-            />
+            {isOtpMode ? (
+              <Button
+                title={isLoading ? "Sending OTP..." : "Send OTP to Email"}
+                onPress={handleOtpLogin}
+                disabled={isLoading || !email}
+              />
+            ) : (
+              <Button
+                title={isLoading ? "Signing in..." : "Sign In"}
+                onPress={handleLogin}
+                disabled={isLoading || !email || !password}
+              />
+            )}
+
+            {/* Toggle OTP/Password mode */}
+            <TouchableOpacity onPress={toggleMode} className="py-2">
+              <Text className="font-sans text-muted text-center">
+                {isOtpMode ? (
+                  <>
+                    Remember your password?{" "}
+                    <Text className="font-bold text-primary">Use Password</Text>
+                  </>
+                ) : (
+                  <>
+                    Forgot password?{" "}
+                    <Text className="font-bold text-primary">Sign in with OTP</Text>
+                  </>
+                )}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {/* Footer */}
@@ -99,4 +144,3 @@ export default function Login() {
     </KeyboardAvoidingView>
   );
 }
-

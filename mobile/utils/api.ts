@@ -85,6 +85,20 @@ class ApiClient {
     });
   }
 
+  async requestLoginOTP(email: string): Promise<ApiResponse<{ message: string }>> {
+    return this.request("/auth/login-otp/request", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async verifyLoginOTP(data: OTPVerification): Promise<ApiResponse<{ token: string; user: User }>> {
+    return this.request("/auth/login-otp/verify", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
   // Posts endpoints
   async getPosts({ 
     type, 

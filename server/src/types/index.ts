@@ -16,3 +16,8 @@ export interface OTPEntry {
   expiresAt: Date;
 }
 
+export interface LoginOTPEntry {
+  otp: string;
+  email: string;
+  expiresAt: Date;
+}

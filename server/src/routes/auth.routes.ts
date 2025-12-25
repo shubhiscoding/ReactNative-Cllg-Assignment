@@ -3,12 +3,13 @@ import bcrypt from "bcryptjs";
 import prisma from "../config/database";
 import { sendOTPEmail, generateOTP } from "../services/email.service";
 import { extractDomain, getSchoolName, generateToken, formatUserResponse } from "../utils/helpers";
-import { OTPEntry } from "../types";
+import { OTPEntry, LoginOTPEntry } from "../types";
 
 const router = Router();
 
 // In-memory OTP store (use Redis in production)
 const otpStore: Map<string, OTPEntry> = new Map();
+const loginOtpStore: Map<string, LoginOTPEntry> = new Map();
 
 // Register - sends OTP
 router.post("/register", async (req: Request, res: Response): Promise<void> => {
@@ -182,6 +183,114 @@ router.post("/resend-otp", async (req: Request, res: Response): Promise<void> =>
     });
   } catch (error: any) {
     console.error("Resend OTP error:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Request OTP for login (forgot password flow)
+router.post("/login-otp/request", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      res.status(400).json({ success: false, error: "Email is required" });
+      return;
+    }
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      res.status(404).json({ success: false, error: "No account found with this email" });
+      return;
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    // Store login OTP
+    loginOtpStore.set(email, {
+      otp,
+      email,
+      expiresAt,
+    });
+
+    // Send OTP email
+    try {
+      await sendOTPEmail(email, otp);
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
+      console.log(`[DEV] Login OTP for ${email}: ${otp}`);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent to your email",
+    });
+  } catch (error: any) {
+    console.error("Login OTP request error:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Verify OTP and login (forgot password flow)
+router.post("/login-otp/verify", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      res.status(400).json({ success: false, error: "Email and OTP are required" });
+      return;
+    }
+
+    const storedData = loginOtpStore.get(email);
+
+    if (!storedData) {
+      res.status(400).json({ success: false, error: "No OTP found. Please request a new one." });
+      return;
+    }
+
+    if (new Date() > storedData.expiresAt) {
+      loginOtpStore.delete(email);
+      res.status(400).json({ success: false, error: "OTP expired. Please request a new one." });
+      return;
+    }
+
+    if (storedData.otp !== otp) {
+      res.status(400).json({ success: false, error: "Invalid OTP" });
+      return;
+    }
+
+    // Get user
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: { school: true },
+    });
+
+    if (!user) {
+      res.status(404).json({ success: false, error: "User not found" });
+      return;
+    }
+
+    // Clear OTP
+    loginOtpStore.delete(email);
+
+    // Generate token
+    const token = generateToken({
+      id: user.id,
+      email: user.email,
+      schoolId: user.schoolId,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        token,
+        user: formatUserResponse(user, user.school),
+      },
+    });
+  } catch (error: any) {
+    console.error("Login OTP verify error:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
