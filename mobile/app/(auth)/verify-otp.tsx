@@ -76,8 +76,16 @@ export default function VerifyOTP() {
 
   const handleResend = async () => {
     if (!email || resendTimer > 0) return;
-    await dispatch(resendOTP(email));
-    setResendTimer(60);
+    const result = await dispatch(resendOTP(email));
+    if (resendOTP.fulfilled.match(result)) {
+      setResendTimer(60);
+    } else if (resendOTP.rejected.match(result)) {
+      // If session expired, redirect back to signup
+      const errorMsg = result.payload as string;
+      if (errorMsg?.includes("Session expired") || errorMsg?.includes("register again")) {
+        router.replace("/(auth)/signup");
+      }
+    }
   };
 
   const isComplete = otp.every((digit) => digit !== "");

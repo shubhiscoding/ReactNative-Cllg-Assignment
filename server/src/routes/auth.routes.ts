@@ -139,10 +139,9 @@ router.post("/verify-otp", async (req: Request, res: Response): Promise<void> =>
 router.post("/resend-otp", async (req: Request, res: Response): Promise<void> => {
   try {
     const { email } = req.body;
-    console.log("email", email);
+    console.log("Resend OTP request for:", email);
 
     if (!email) {
-      console.log("Email is required");
       res.status(400).json({ success: false, error: "Email is required" });
       return;
     }
@@ -150,8 +149,12 @@ router.post("/resend-otp", async (req: Request, res: Response): Promise<void> =>
     const storedData = otpStore.get(email);
 
     if (!storedData) {
-      console.log("No pending registration found");
-      res.status(400).json({ success: false, error: "No pending registration found" });
+      // OTP session expired or server restarted - user needs to register again
+      res.status(400).json({ 
+        success: false, 
+        error: "Session expired. Please go back and register again.",
+        code: "SESSION_EXPIRED"
+      });
       return;
     }
 
