@@ -1,4 +1,4 @@
-# Yappers 🗣️
+# Yappers
 
 A college-specific anonymous social media app where students can share posts, hot takes, and engage with their campus community.
 
@@ -6,12 +6,12 @@ A college-specific anonymous social media app where students can share posts, ho
 
 ## Features
 
-- **🎓 College-Specific Communities**: Users are auto-grouped by their school email domain
-- **🎭 Anonymous Posting**: Choose to post anonymously or with your display name
-- **🔥 Hot Takes Feed**: Mark your spicy opinions as "hot takes" for a dedicated feed
-- **⬆️⬇️ Voting System**: Upvote/downvote posts (Reddit-style)
-- **💬 Comments**: Engage with posts through comments (also with anonymous option)
-- **📧 OTP Verification**: Secure email verification with 6-digit OTP
+- **College-Specific Communities**: Users are auto-grouped by their school email domain
+- **Anonymous Posting**: Choose to post anonymously or with your display name
+- **Hot Takes Feed**: Mark your spicy opinions as "hot takes" for a dedicated feed
+- **Voting System**: Upvote/downvote posts (Reddit-style)
+- **Comments**: Engage with posts through comments (also with anonymous option)
+- **OTP Verification**: Secure email verification with 6-digit OTP
 
 ## DEMO
 
