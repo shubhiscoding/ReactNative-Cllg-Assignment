@@ -235,10 +235,6 @@ To enable OTP emails:
 - Database syncs automatically on server start
 - Use `npm run db:sync` to manually sync database
 
-## Screenshots
-
-*Add screenshots of your app here*
-
 ## License
 
 MIT
